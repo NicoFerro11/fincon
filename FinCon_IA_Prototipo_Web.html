@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinCon IA — Copiloto Financiero, Scoring y Reactivación</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #1E293B; }
+    .tab-active { background-color: #0F2240; color: #FFFFFF; }
+    .tab-inactive { color: #CBD5E1; }
+    .tab-inactive:hover { background-color: #1E3A6E; color: #FFFFFF; }
+    .guide-banner { background: linear-gradient(135deg, #0F2240 0%, #0F5257 100%); }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row">
+
+  <!-- SIDEBAR -->
+  <aside class="no-print w-full md:w-72 bg-[#0F2240] text-white flex flex-col justify-between shrink-0">
+    <div>
+      <div class="p-6 border-b border-slate-700/70">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-teal-500 flex items-center justify-center font-extrabold text-white text-xl shadow">F</div>
+          <div>
+            <h1 class="font-bold text-lg tracking-tight leading-none">FinCon IA</h1>
+            <p class="text-xs text-teal-300 mt-1">Contador de Bolsillo & Reactivación</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-4 pt-4">
+        <button onclick="openGuideModal()" class="w-full py-2.5 px-3 rounded-xl bg-teal-500/20 hover:bg-teal-500/30 border border-teal-400/40 text-teal-200 text-xs font-bold flex items-center justify-between transition">
+          <span>🎓 ¿Cómo se usa esta app?</span>
+          <span class="bg-teal-400 text-slate-950 px-2 py-0.5 rounded-full text-[10px] font-extrabold">GUÍA</span>
+        </button>
+      </div>
+
+      <nav class="p-4 space-y-1.5" id="navMenu">
+        <button onclick="switchTab('designthinking')" id="btn-designthinking" class="tab-inactive w-full text-left px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-3 transition">
+          <span>🧭</span> 0. Metodología Design Thinking
+        </button>
+        <button onclick="switchTab('dashboard')" id="btn-dashboard" class="tab-active w-full text-left px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-3 transition">
+          <span>📊</span> 1. Tu Caja Hoy (Semáforo)
+        </button>
+        <button onclick="switchTab('quickentry')" id="btn-quickentry" class="tab-inactive w-full text-left px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-3 transition">
+          <span>⚡</span> 2. Anotar Venta/Gasto & IA
+        </button>
+        <button onclick="switchTab('ml')" id="btn-ml" class="tab-inactive w-full text-left px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-3 transition">
+          <span>🤖</span> 3. Apoyo por Sismo & ML
+        </button>
+        <button onclick="switchTab('scoring')" id="btn-scoring" class="tab-inactive w-full text-left px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-3 transition">
+          <span>🧮</span> 4. Respaldo, Puntaje y Cuotas
+        </button>
+        <button onclick="switchTab('crowdfunding')" id="btn-crowdfunding" class="tab-inactive w-full text-left px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-3 transition">
+          <span>🤝</span> 5. Crowdfunding Comunitario
+        </button>
+        <button onclick="switchTab('p2p')" id="btn-p2p" class="tab-inactive w-full text-left px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-3 transition">
+          <span>📱</span> 6. Código QR, P2P & Soporte
+        </button>
+      </nav>
+    </div>
+
+    <div class="p-4 m-4 rounded-xl bg-slate-800/80 border border-slate-700 text-xs space-y-1.5">
+      <p class="font-semibold text-teal-400">Universidad Sergio Arboleda</p>
+      <p class="text-slate-300">PRIME Business School</p>
+      <p class="text-slate-400">FinCon IA • Prototipo Web con QR</p>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 flex flex-col min-w-0">
+    <!-- TOP HEADER -->
+    <header class="bg-white border-b border-slate-200 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <span class="text-xs font-semibold uppercase tracking-wider text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full">Negocio Registrado • Lenguaje Claro</span>
+        <div class="flex items-center gap-2 mt-1">
+          <input id="businessNameInput" type="text" value="Óptica Ojazos y Ojitos — Negocio Local"
+            class="font-bold text-slate-900 text-base md:text-lg bg-transparent border-b border-dashed border-slate-300 focus:outline-none focus:border-teal-600 w-72 md:w-96" />
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2.5 no-print">
+        <button onclick="openQRModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-sm font-bold px-4 py-2 rounded-lg shadow-sm flex items-center gap-1.5 transition">
+          <span>📱</span> Mostrar Código QR
+        </button>
+        <button onclick="switchTab('quickentry')" class="bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition">
+          + Anotar Ahora
+        </button>
+        <button onclick="switchTab('p2p')" class="bg-[#0F2240] hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition">
+          📄 Mi Soporte
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTENT CONTAINER -->
+    <div class="p-6 max-w-7xl w-full mx-auto space-y-6">
+
+      <!-- GUÍA RÁPIDA DE USO PARA EL COMERCIANTE -->
+      <div id="userGuideCard" class="guide-banner text-white rounded-2xl p-5 shadow-md">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div class="space-y-1 max-w-3xl">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-extrabold uppercase tracking-wider bg-teal-400 text-slate-950 px-2.5 py-0.5 rounded-full">Paso a Paso para Ti</span>
+              <span class="text-xs text-teal-200">Sin palabras contables difíciles</span>
+            </div>
+            <h2 class="text-base md:text-lg font-bold">¿Cómo usar FinCon IA en tu negocio todos los días?</h2>
+            <p class="text-xs md:text-sm text-slate-200">
+              FinCon IA te muestra cuánto dinero es realmente tuyo hoy (sin contar lo que debes guardar para arriendo, empleados o impuestos) y genera tu <strong>Código QR</strong> para cobrar fácil y dejar historial.
+            </p>
+          </div>
+          <button onclick="toggleGuideCard()" class="no-print text-xs bg-white/15 hover:bg-white/25 text-white px-3 py-1.5 rounded-lg font-semibold transition">
+            Ocultar guía
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4 text-xs">
+          <button onclick="switchTab('designthinking')" class="text-left p-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 transition">
+            <p class="font-extrabold text-teal-300">0. Design Thinking (4 Fases)</p>
+            <p class="text-slate-200 mt-0.5">Empatizar, Definir, Idear y Prototipar: el origen y sustento de FinCon IA.</p>
+          </button>
+          <button onclick="switchTab('quickentry')" class="text-left p-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 transition">
+            <p class="font-extrabold text-teal-300">2. Anota en 3 Clics</p>
+            <p class="text-slate-200 mt-0.5">Sube la foto de un recibo (OCR) o anota tus ventas y pregúntale al Asistente IA.</p>
+          </button>
+          <button onclick="switchTab('ml')" class="text-left p-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 transition">
+            <p class="font-extrabold text-teal-300">3. Revisa tu Ruta de Apoyo</p>
+            <p class="text-slate-200 mt-0.5">Registra ventas y daños por el sismo para ver qué ayuda o crédito te conviene.</p>
+          </button>
+          <button onclick="openQRModal()" class="text-left p-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 transition">
+            <p class="font-extrabold text-amber-300">4. Cobra con tu Código QR</p>
+            <p class="text-slate-200 mt-0.5">Muestra tu QR en pantalla para que te escaneen y sumes historial digital.</p>
+          </button>
+        </div>
+      </div>
+
+      <!-- ==================== TAB 0: METODOLOGÍA DESIGN THINKING ==================== -->
+      <section id="tab-designthinking" class="hidden space-y-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full">Marco Metodológico del Proyecto</span>
+              <h2 class="text-xl font-extrabold text-slate-900 mt-2">Design Thinking Aplicado a FinCon IA</h2>
+            </div>
+            <div class="flex flex-wrap gap-1.5 text-xs">
+              <a href="#dt-empatizar" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold text-slate-800">1. Empatizar</a>
+              <a href="#dt-definir" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold text-slate-800">2. Definir</a>
+              <a href="#dt-idear" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold text-slate-800">3. Idear</a>
+              <a href="#dt-prototipar" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold text-slate-800">4. Prototipar</a>
+            </div>
+          </div>
+          <p class="text-xs md:text-sm text-slate-600">
+            El diseño de FinCon IA parte de la inmersión con comercios tradicionales (caso Óptica «Ojazos y Ojitos» y comerciantes afectados por el sismo en Armenia y el Quindío) para construir una solución financiera centrada en las personas y sin fricción operativa.
+          </p>
+        </div>
+
+        <div id="dt-empatizar" class="bg-white p-6 rounded-2xl border-l-4 border-teal-600 border border-slate-200 shadow-sm space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span class="text-xs font-extrabold uppercase tracking-wider text-teal-700">Fase 1 • Design Thinking</span>
+              <h3 class="text-lg font-bold text-slate-900">Empatizar: Inmersión en Campo y Realidad del Comerciante</h3>
+            </div>
+            <button onclick="switchTab('dashboard')" class="text-xs bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold px-3 py-1.5 rounded-lg border border-teal-200">
+              Ver aplicado en Semáforo de Caja →
+            </button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+              <p class="font-bold text-slate-900">1. Sobrecarga Operativa Multitarea</p>
+              <p class="text-slate-600">El dueño atiende clientes, controla inventario, negocia con proveedores y cobra al mismo tiempo, sin tiempo para digitar facturas en programas complejos.</p>
+            </div>
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+              <p class="font-bold text-slate-900">2. Paradoja de «Caja Llena pero Negocio Ilíquido»</p>
+              <p class="text-slate-600">Se confunde el dinero disponible en efectivo o cuentas con la ganancia real, gastando sin apartar reservas para arriendo, nómina e impuestos.</p>
+            </div>
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+              <p class="font-bold text-slate-900">3. Brecha con Softwares y Lenguaje Técnico</p>
+              <p class="text-slate-600">Las plataformas contables tradicionales exigen parametrizaciones complejas y las asesorías llegan tarde (solo al cierre del mes) con tecnicismos difíciles de aplicar.</p>
+            </div>
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+              <p class="font-bold text-slate-900">4. Urgencia de Soportes y Liquidez Pos-Sismo</p>
+              <p class="text-slate-600">Tras emergencias como el sismo de agosto de 2026, quienes llevan cuentas en cuadernos quedan excluidos de alivios, subsidios y créditos formales.</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="dt-definir" class="bg-white p-6 rounded-2xl border-l-4 border-amber-500 border border-slate-200 shadow-sm space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span class="text-xs font-extrabold uppercase tracking-wider text-amber-700">Fase 2 • Design Thinking</span>
+              <h3 class="text-lg font-bold text-slate-900">Definir: Enunciado del Problema y Árbol Causal</h3>
+            </div>
+            <button onclick="switchTab('ml')" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold px-3 py-1.5 rounded-lg border border-amber-200">
+              Ver aplicado en Diagnóstico & ML →
+            </button>
+          </div>
+          <div class="p-4 rounded-xl bg-amber-50/80 border border-amber-200 text-xs md:text-sm font-semibold text-slate-900">
+            «Los micro y pequeños empresarios del comercio independiente pierden visibilidad sobre su liquidez real y quedan excluidos del financiamiento formal debido a la alta fricción operativa de los registros contables, la ausencia de soportes trazables y la exigencia de garantías rígidas.»
+          </div>
+        </div>
+
+        <div id="dt-idear" class="bg-white p-6 rounded-2xl border-l-4 border-blue-600 border border-slate-200 shadow-sm space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span class="text-xs font-extrabold uppercase tracking-wider text-blue-700">Fase 3 • Design Thinking</span>
+              <h3 class="text-lg font-bold text-slate-900">Idear: Propuesta de Valor, Océano Azul y Verticales Fintech</h3>
+            </div>
+            <button onclick="switchTab('scoring')" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 font-bold px-3 py-1.5 rounded-lg border border-blue-200">
+              Ver aplicado en Respaldos & Scoring →
+            </button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+            <div class="p-3.5 rounded-xl bg-rose-50/60 border border-rose-200">
+              <p class="font-extrabold text-rose-900">ELIMINAR</p>
+              <p class="text-slate-700 mt-1">Jerga contable incomprensible, instalación de softwares pesados y esperas de fin de mes para ver cifras.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-amber-50/60 border border-amber-200">
+              <p class="font-extrabold text-amber-900">REDUCIR</p>
+              <p class="text-slate-700 mt-1">Tiempo de registro manual, errores por pérdida de recibos físicos y dependencia del crédito informal.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-teal-50/60 border border-teal-200">
+              <p class="font-extrabold text-teal-900">INCREMENTAR</p>
+              <p class="text-slate-700 mt-1">Disciplina de registro diario, visibilidad del dinero libre real y trazabilidad digital mediante QR.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-blue-50/60 border border-blue-200">
+              <p class="font-extrabold text-blue-900">CREAR</p>
+              <p class="text-slate-700 mt-1">Semáforo de Caja Libre, Soporte de Viabilidad express, Scoring con respaldos alternativos y Crowdfunding comunitario.</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="dt-prototipar" class="bg-white p-6 rounded-2xl border-l-4 border-purple-600 border border-slate-200 shadow-sm space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span class="text-xs font-extrabold uppercase tracking-wider text-purple-700">Fase 4 • Design Thinking</span>
+              <h3 class="text-lg font-bold text-slate-900">Prototipar: Recorrido del Usuario y Módulos Interactivos de esta Web</h3>
+            </div>
+            <button onclick="switchTab('p2p')" class="text-xs bg-purple-50 hover:bg-purple-100 text-purple-800 font-bold px-3 py-1.5 rounded-lg border border-purple-200">
+              Probar QR & Soporte Final →
+            </button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+            <button onclick="switchTab('dashboard')" class="text-left p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition">
+              <p class="font-bold text-[#0F2240]">Módulo 1: Tu Caja Hoy (Semáforo)</p>
+              <p class="text-slate-600 mt-1">Control en tiempo real del dinero libre descontando arriendo, nómina e impuestos.</p>
+            </button>
+            <button onclick="switchTab('quickentry')" class="text-left p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition">
+              <p class="font-bold text-[#0F2240]">Módulo 2: Registro en 3 Clics & IA</p>
+              <p class="text-slate-600 mt-1">Captura rápida, lectura simulada de facturas (OCR) y consultas en lenguaje cotidiano.</p>
+            </button>
+            <button onclick="switchTab('ml')" class="text-left p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition">
+              <p class="font-bold text-[#0F2240]">Módulo 3: Diagnóstico & ML</p>
+              <p class="text-slate-600 mt-1">Agrupamiento no supervisado por nivel de afectación y proyección supervisada de caja.</p>
+            </button>
+            <button onclick="switchTab('scoring')" class="text-left p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition">
+              <p class="font-bold text-[#0F2240]">Módulo 4: Respaldos, Puntaje y Cuotas</p>
+              <p class="text-slate-600 mt-1">Garantías alternativas, scoring ponderado (umbral 88 %) y tabla de amortización.</p>
+            </button>
+            <button onclick="switchTab('crowdfunding')" class="text-left p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition">
+              <p class="font-bold text-[#0F2240]">Módulo 5: Crowdfunding Comunitario</p>
+              <p class="text-slate-600 mt-1">Preventa solidaria de bonos para negocios críticos y niveles de recompensa.</p>
+            </button>
+            <button onclick="switchTab('p2p')" class="text-left p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition">
+              <p class="font-bold text-[#0F2240]">Módulo 6: Código QR (@FINCON) & PDF</p>
+              <p class="text-slate-600 mt-1">Cobros digitales escaneables, transferencias P2P y emisión del Soporte de Viabilidad.</p>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 1: DASHBOARD ==================== -->
+      <section id="tab-dashboard" class="space-y-6">
+        <div id="semaforoCard" class="rounded-2xl p-6 border-2 border-emerald-500 bg-white shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <div class="flex items-center gap-3">
+              <span id="semaforoDot" class="w-5 h-5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+              <div>
+                <h2 class="text-lg font-bold text-slate-900">Semáforo de tu Dinero Libre Hoy</h2>
+                <p class="text-xs text-slate-500">Tener plata en caja no significa que toda sea ganancia: primero apartamos tus compromisos fijos.</p>
+              </div>
+            </div>
+            <span id="semaforoBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+              VERDE: PUEDES OPERAR CON TRANQUILIDAD
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <p class="text-xs font-medium text-slate-500">Todo el Dinero que Tienes Hoy (Bancos + QR + Efectivo)</p>
+              <p id="kpiCajaTotal" class="text-2xl font-extrabold text-slate-900 mt-1">$2.850.000</p>
+              <p class="text-xs text-slate-400 mt-1">Suma total antes de apartar obligaciones</p>
+            </div>
+            <div class="p-4 rounded-xl bg-amber-50/70 border border-amber-200">
+              <p class="text-xs font-medium text-amber-800">Apartados Obligatorios (No Tocar)</p>
+              <p id="kpiReservas" class="text-2xl font-extrabold text-amber-900 mt-1">$1.700.000</p>
+              <p class="text-xs text-amber-700 mt-1">Arriendo ($900k) + Pago empleados ($550k) + Impuestos ($250k)</p>
+            </div>
+            <div id="boxCajaLibre" class="p-4 rounded-xl bg-emerald-50 border border-emerald-300">
+              <p class="text-xs font-bold text-emerald-800">★ DINERO LIBRE REAL PARA USAR HOY</p>
+              <p id="kpiCajaLibre" class="text-2xl font-extrabold text-emerald-700 mt-1">$1.150.000</p>
+              <p class="text-xs text-emerald-700 mt-1">Es lo que realmente puedes gastar en surtir o invertir hoy</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">Presupuesto y Metas del Mes</span>
+            <h3 class="font-bold text-slate-800 mt-2">Avance de Ventas vs. Meta</h3>
+            <p class="text-xl font-bold text-slate-900 mt-1">$14.200.000 <span class="text-xs font-normal text-slate-500">/ Meta $18M</span></p>
+            <div class="w-full bg-slate-100 h-2.5 rounded-full mt-3">
+              <div class="bg-blue-600 h-2.5 rounded-full" style="width: 79%"></div>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">Vas en el 79% de tu meta mensual de ventas.</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded">Soportes Ordenados</span>
+            <h3 class="font-bold text-slate-800 mt-2">Recibos Listos para Trámites</h3>
+            <p class="text-xl font-bold text-teal-700 mt-1">42 Soportes Guardados</p>
+            <p class="text-xs text-slate-600 mt-2">Te sirven para pedir alivios, subsidios de reactivación o créditos formales.</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-xl border-2 border-amber-300 shadow-sm flex items-center justify-between gap-3">
+            <div>
+              <span class="text-xs font-semibold text-amber-800 bg-amber-100 px-2 py-0.5 rounded">Colateral Digital QR</span>
+              <h3 class="font-bold text-slate-800 mt-2">Tu QR de Cobro</h3>
+              <p class="text-xs text-slate-600 mt-1">68% de tus cobros entran por QR y respaldan tu puntaje (88%).</p>
+              <button onclick="openQRModal()" class="mt-2.5 text-xs font-bold text-teal-700 hover:underline">
+                Ampliar QR para escanear →
+              </button>
+            </div>
+            <div id="miniDashboardQR" onclick="openQRModal()" class="cursor-pointer p-1.5 bg-white border border-slate-200 rounded-lg shrink-0" title="Clic para ampliar QR"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-slate-800 mb-1">¿En Qué se va tu Plata?</h3>
+            <p class="text-xs text-slate-500 mb-3">Así se reparten tus salidas de dinero para evitar fugas sin darte cuenta.</p>
+            <div class="h-60">
+              <canvas id="expensesChart"></canvas>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-slate-800 mb-1">Últimos Movimientos Anotados</h3>
+            <p class="text-xs text-slate-500 mb-3">Cada venta o pago queda anotado en orden y actualiza tu caja.</p>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-left">
+                <thead class="text-xs text-slate-500 uppercase bg-slate-50">
+                  <tr>
+                    <th class="px-3 py-2">Qué Pasó</th>
+                    <th class="px-3 py-2">Cómo Cobraste/Pagaste</th>
+                    <th class="px-3 py-2 text-right">Valor</th>
+                  </tr>
+                </thead>
+                <tbody id="txTableBody" class="divide-y divide-slate-100">
+                  <tr>
+                    <td class="px-3 py-2.5 font-medium">Venta Montura + Lentes Antirreflejo</td>
+                    <td class="px-3 py-2.5"><span class="text-xs bg-teal-50 text-teal-700 px-2 py-0.5 rounded">QR / Billetera</span></td>
+                    <td class="px-3 py-2.5 text-right font-bold text-emerald-600">+$280.000</td>
+                  </tr>
+                  <tr>
+                    <td class="px-3 py-2.5 font-medium">Pago Laboratorio Óptico Mayorista</td>
+                    <td class="px-3 py-2.5"><span class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded">Transferencia P2P</span></td>
+                    <td class="px-3 py-2.5 text-right font-bold text-rose-600">-$145.000</td>
+                  </tr>
+                  <tr>
+                    <td class="px-3 py-2.5 font-medium">Consulta Optometría + Gotas</td>
+                    <td class="px-3 py-2.5"><span class="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Efectivo</span></td>
+                    <td class="px-3 py-2.5 text-right font-bold text-emerald-600">+$95.000</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 2: QUICK-ENTRY & COPILOTO IA ==================== -->
+      <section id="tab-quickentry" class="hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900">Anota en 3 Clics o Sube Foto de Recibo (OCR)</h2>
+                <p class="text-xs text-slate-500">Sin hojas de cálculo complicadas. Si sacas plata para la casa, te avisamos.</p>
+              </div>
+              <button onclick="simulateOCR()" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold px-3 py-1.5 rounded-lg border border-indigo-200 transition">
+                📷 Leer Recibo con Foto (OCR)
+              </button>
+            </div>
+
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">1. ¿Entró o salió plata?</label>
+                <select id="txType" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                  <option value="ingreso">Entró plata por venta o abono (+)</option>
+                  <option value="gasto_op">Salió plata para el negocio / proveedor (-)</option>
+                  <option value="gasto_personal">Saqué plata para gastos de la casa / personal (-)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">2. ¿Cuánto fue? ($ COP)</label>
+                <input id="txAmount" type="number" placeholder="Ej. 180000" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">3. ¿Por qué concepto? (escríbelo normal)</label>
+                <input id="txConcept" type="text" placeholder="Ej. Abono lentes progresivos cliente" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">¿Cómo se pagó?</label>
+                <select id="txMethod" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                  <option value="QR / Billetera">QR / Billetera Digital (Ayuda a tu historial)</option>
+                  <option value="Transferencia P2P">Transferencia entre cuentas (P2P)</option>
+                  <option value="Efectivo">Efectivo en Caja</option>
+                </select>
+              </div>
+              <button onclick="addTransaction()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-lg text-sm transition">
+                Guardar y Actualizar Mi Caja Libre
+              </button>
+              <div id="txAlert" class="hidden p-3 rounded-lg text-xs font-medium"></div>
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-xl">🤖</span>
+                <div>
+                  <h2 class="text-lg font-bold text-slate-900">Asistente FinCon IA (Te Habla Claro)</h2>
+                  <p class="text-xs text-slate-500">Pregúntale si te alcanza para una compra o qué apoyos aplican para ti</p>
+                </div>
+              </div>
+
+              <div id="chatBox" class="h-64 overflow-y-auto bg-slate-50 rounded-xl p-4 space-y-3 border border-slate-200 text-sm">
+                <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-xs">
+                  <p class="text-xs font-bold text-teal-700 mb-1">FinCon IA:</p>
+                  <p>¡Hola! Hoy tienes <strong>$1.150.000 COP</strong> de Dinero Libre Real (ya aparté los $1.700.000 de arriendo, empleados e impuestos). ¿En qué te ayudo hoy?</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 space-y-2">
+              <div class="flex flex-wrap gap-1.5">
+                <button onclick="askCopilot('¿Me alcanza hoy para comprar mercancía por $800.000?')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full">
+                  ¿Me alcanza para comprar $800k hoy?
+                </button>
+                <button onclick="askCopilot('¿A qué ayudas o alivios puedo aplicar tras el sismo?')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full">
+                  ¿Qué ayudas o alivios aplican?
+                </button>
+              </div>
+              <div class="flex gap-2">
+                <input id="chatInput" type="text" placeholder="Escribe tu pregunta como si hablaras con un asesor..." class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+                <button onclick="sendChat()" class="bg-[#0F2240] text-white px-4 py-2 rounded-lg text-sm font-semibold">Preguntar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 3: REACTIVACIÓN & ML ==================== -->
+      <section id="tab-ml" class="hidden space-y-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h2 class="text-lg font-bold text-slate-900">Diagnóstico por Sismo y Ruta Inteligente (Aprendizaje Automático)</h2>
+          <p class="text-xs text-slate-500 mt-1">Mueve o edita estos datos de tu negocio: el sistema primero ubica tu situación (Fase 1: agrupamiento) y luego proyecta tu caja y cuota segura (Fase 2: proyección).</p>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Ventas diarias ANTES del sismo ($)</label>
+              <input id="mlSalesBefore" type="number" value="450000" oninput="runMLPipeline()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Ventas diarias DESPUÉS / HOY ($)</label>
+              <input id="mlSalesAfter" type="number" value="310000" oninput="runMLPipeline()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Daños en local o mercancía perdida ($)</label>
+              <input id="mlDamage" type="number" value="1800000" oninput="runMLPipeline()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">% de ventas cobradas por QR o billetera</label>
+              <input id="mlDigitalShare" type="number" value="68" min="0" max="100" oninput="runMLPipeline()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Días a la semana que anotas en FinCon</label>
+              <input id="mlFreq" type="number" value="6" min="0" max="7" oninput="runMLPipeline()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">¿Tienes préstamos diarios ("gota a gota")?</label>
+              <select id="mlGota" onchange="runMLPipeline()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                <option value="no">No tengo deuda diaria informal</option>
+                <option value="si">Sí, pago cuotas diarias informales</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div id="clusterResultCard" class="bg-white p-6 rounded-2xl border-2 border-teal-500 shadow-sm space-y-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2.5 py-1 rounded">Fase 1: Agrupamiento Automático (No Supervisado)</span>
+            <h3 id="clusterTitle" class="text-xl font-extrabold text-slate-900">Clúster 0 — Negocio Resiliente con Falta de Caja</h3>
+            <p id="clusterMetrics" class="text-xs font-semibold text-slate-500">Caída de ventas: 31,1% | Índice daño físico: 18,0%</p>
+            <p id="clusterDesc" class="text-sm text-slate-700">Tu negocio sigue activo y anota movimientos, pero necesita impulso para recuperar capital de trabajo.</p>
+            <div id="clusterRoute" class="p-3 rounded-xl bg-teal-50 border border-teal-200 text-xs font-semibold text-teal-900">
+              Qué te conviene: Microcrédito productivo (hasta $5.000.000 COP), alivios o convocatorias de reactivación.
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2.5 py-1 rounded">Fase 2: Proyección a Futuro (Aprendizaje Supervisado)</span>
+            <div class="grid grid-cols-3 gap-3 text-center">
+              <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <p class="text-[11px] text-slate-500">Caja Libre en 90 días</p>
+                <p id="supY1" class="text-base font-extrabold text-slate-900 mt-1">$4.920.000</p>
+              </div>
+              <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <p class="text-[11px] text-slate-500">Cuota Máxima Segura/mes</p>
+                <p id="supY2" class="text-base font-extrabold text-teal-700 mt-1">$546.000</p>
+              </div>
+              <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <p class="text-[11px] text-slate-500">Puntaje de Confianza</p>
+                <p id="supY3" class="text-base font-extrabold text-blue-700 mt-1">89%</p>
+              </div>
+            </div>
+            <div class="h-44">
+              <canvas id="mlForecastChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 4: SCORING, COLATERALES & AMORTIZACIÓN ==================== -->
+      <section id="tab-scoring" class="hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900">Evaluación de Puntaje para Aprobación (Umbral: 88,0%)</h2>
+                <p class="text-xs text-slate-500">Cada aspecto pesa distinto según su importancia: Aporte = (Calificación / 5) × Peso.</p>
+              </div>
+              <div class="flex gap-2">
+                <button onclick="setScoringPreset('approved')" class="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-3 py-1.5 rounded-lg">
+                  Ejemplo Aprobado (88%)
+                </button>
+                <button onclick="setScoringPreset('rejected')" class="text-xs bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold px-3 py-1.5 rounded-lg">
+                  Ejemplo No Aprobado (43%)
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-3 text-sm">
+              <div class="grid grid-cols-12 items-center gap-2 p-2.5 rounded-lg bg-slate-50">
+                <span class="col-span-6 font-medium">1. Cumplimiento con Proveedores (Peso 35%)</span>
+                <select id="sc1" onchange="calcScoring()" class="col-span-4 border border-slate-300 rounded px-2 py-1 text-xs">
+                  <option value="5">Siempre al día (5 pts)</option>
+                  <option value="4" selected>Atrasos menores <30 días (4 pts)</option>
+                  <option value="3">Atrasos de 30–60 días (3 pts)</option>
+                  <option value="2">Atrasos de 60–90 días (2 pts)</option>
+                  <option value="1">Atrasos >90 días (1 pt)</option>
+                </select>
+                <span id="sc1Out" class="col-span-2 text-right font-bold text-slate-800">28,0%</span>
+              </div>
+
+              <div class="grid grid-cols-12 items-center gap-2 p-2.5 rounded-lg bg-slate-50">
+                <span class="col-span-6 font-medium">2. Peso de tus Deudas Actuales (Peso 25%)</span>
+                <select id="sc2" onchange="calcScoring()" class="col-span-4 border border-slate-300 rounded px-2 py-1 text-xs">
+                  <option value="5">Muy baja <20% de ingresos (5 pts)</option>
+                  <option value="4" selected>Baja 20–30% de ingresos (4 pts)</option>
+                  <option value="3">Moderada 30–40% (3 pts)</option>
+                  <option value="2">Alta 40–50% (2 pts)</option>
+                  <option value="1">Muy alta >50% (1 pt)</option>
+                </select>
+                <span id="sc2Out" class="col-span-2 text-right font-bold text-slate-800">20,0%</span>
+              </div>
+
+              <div class="grid grid-cols-12 items-center gap-2 p-2.5 rounded-lg bg-slate-50">
+                <span class="col-span-6 font-medium">3. Historial y Comportamiento (Peso 20%)</span>
+                <select id="sc3" onchange="calcScoring()" class="col-span-4 border border-slate-300 rounded px-2 py-1 text-xs">
+                  <option value="5" selected>Excelente / sin fallas (5 pts)</option>
+                  <option value="4">Bueno / fallas leves (4 pts)</option>
+                  <option value="3">Regular (3 pts)</option>
+                  <option value="2">Malo (2 pts)</option>
+                  <option value="1">Muy malo / quiebra (1 pt)</option>
+                </select>
+                <span id="sc3Out" class="col-span-2 text-right font-bold text-slate-800">20,0%</span>
+              </div>
+
+              <div class="grid grid-cols-12 items-center gap-2 p-2.5 rounded-lg bg-slate-50">
+                <span class="col-span-6 font-medium">4. Tipo de Respaldo / Colateral (Peso 10%)</span>
+                <select id="sc4" onchange="calcScoring()" class="col-span-4 border border-slate-300 rounded px-2 py-1 text-xs">
+                  <option value="5" selected>Variado / respaldado (5 pts)</option>
+                  <option value="3">Limitado (3 pts)</option>
+                  <option value="1">Solo un tipo / sin respaldo (1 pt)</option>
+                </select>
+                <span id="sc4Out" class="col-span-2 text-right font-bold text-slate-800">10,0%</span>
+              </div>
+
+              <div class="grid grid-cols-12 items-center gap-2 p-2.5 rounded-lg bg-slate-50">
+                <span class="col-span-6 font-medium">5. Solicitudes de Crédito Recientes (Peso 10%)</span>
+                <select id="sc5" onchange="calcScoring()" class="col-span-4 border border-slate-300 rounded px-2 py-1 text-xs">
+                  <option value="5" selected>Ninguna (5 pts)</option>
+                  <option value="3">1 o 2 solicitudes (3 pts)</option>
+                  <option value="1">Más de 2 solicitudes (1 pt)</option>
+                </select>
+                <span id="sc5Out" class="col-span-2 text-right font-bold text-slate-800">10,0%</span>
+              </div>
+            </div>
+
+            <div id="dictamenBox" class="p-4 rounded-xl bg-emerald-50 border border-emerald-300 flex items-center justify-between">
+              <div>
+                <p class="text-xs font-semibold text-emerald-800">PUNTAJE TOTAL OBTENIDO</p>
+                <p id="scTotal" class="text-3xl font-extrabold text-emerald-700">88,0%</p>
+              </div>
+              <div class="text-right">
+                <span id="scVerdict" class="px-4 py-2 rounded-lg text-sm font-extrabold bg-emerald-600 text-white inline-block">
+                  APROBADO
+                </span>
+                <p id="scNextStep" class="text-xs text-emerald-800 mt-1">Cumple el 88,0% requerido para el apoyo de $5.000.000 COP</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <h3 class="font-bold text-slate-900">Tus Respaldos Alternativos</h3>
+            <p class="text-xs text-slate-500">No necesitas casa propia ni estados contables complejos: marca qué respaldos tienes:</p>
+            <div class="space-y-2 text-xs">
+              <label class="flex items-start gap-2 p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                <input type="checkbox" checked class="mt-0.5 accent-teal-600" />
+                <span><strong>Cobros por QR o Billetera:</strong> Demuestran ventas reales día a día.</span>
+              </label>
+              <label class="flex items-start gap-2 p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                <input type="checkbox" checked class="mt-0.5 accent-teal-600" />
+                <span><strong>Mercancía y Equipos:</strong> Inventario de rotación, vitrinas o herramientas.</span>
+              </label>
+              <label class="flex items-start gap-2 p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                <input type="checkbox" checked class="mt-0.5 accent-teal-600" />
+                <span><strong>Aval del Gremio o Vecinos:</strong> Respaldo de asociación o círculo de confianza.</span>
+              </label>
+              <label class="flex items-start gap-2 p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                <input type="checkbox" checked class="mt-0.5 accent-teal-600" />
+                <span><strong>Garantía Institucional / Flujo Futuro:</strong> Apoyo de fondos de garantía o ventas futuras.</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900">¿Cómo Quedarían tus Cuotas? (Tabla de Amortización)</h2>
+              <p class="text-xs text-slate-500">Elige cómo prefieres pagar: cuota igual cada mes (Francés), bajando cada mes (Alemán) o capital al final (Americano).</p>
+            </div>
+            <div class="flex flex-wrap gap-2 items-center">
+              <input id="amAmount" type="number" value="5000000" onchange="calcAmortization()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-xs w-32" title="Monto COP" />
+              <input id="amMonths" type="number" value="12" min="3" max="36" onchange="calcAmortization()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-xs w-20" title="Meses" />
+              <input id="amRate" type="number" value="12" step="0.5" onchange="calcAmortization()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-xs w-20" title="Tasa EA %" />
+              <select id="amMethod" onchange="calcAmortization()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-semibold bg-slate-50">
+                <option value="frances">Método Francés (Cuota Igual)</option>
+                <option value="aleman">Método Alemán (Cuota Baja Cada Mes)</option>
+                <option value="americano">Método Americano (Capital al Final)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="amSummary" class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center"></div>
+
+          <div class="overflow-x-auto max-h-72">
+            <table class="w-full text-xs text-right">
+              <thead class="bg-[#0F2240] text-white sticky top-0">
+                <tr>
+                  <th class="px-3 py-2 text-left">Mes</th>
+                  <th class="px-3 py-2">Cuota a Pagar</th>
+                  <th class="px-3 py-2">Interés</th>
+                  <th class="px-3 py-2">Lo que Abonas a Deuda</th>
+                  <th class="px-3 py-2">Lo que te Falta por Pagar</th>
+                </tr>
+              </thead>
+              <tbody id="amTableBody" class="divide-y divide-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 5: CROWDFUNDING ==================== -->
+      <section id="tab-crowdfunding" class="hidden space-y-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <span class="text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded">Apoyo Sin Endeudarte</span>
+              <h2 class="text-lg font-bold text-slate-900 mt-1">Apoyo Comunitario y Preventa de Bonos</h2>
+              <p class="text-xs text-slate-500">Si tu negocio tuvo un golpe fuerte y no conviene sacar crédito, los clientes o aliados pueden comprar bonos de tus productos por adelantado.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="cfCampaigns">
+            <div class="border border-slate-200 rounded-xl p-4 flex flex-col justify-between bg-slate-50/50">
+              <div>
+                <span class="text-[11px] font-bold bg-rose-100 text-rose-800 px-2 py-0.5 rounded">Daño Fuerte • Verificado</span>
+                <h3 class="font-bold text-slate-900 mt-2">Café Especial del Centro</h3>
+                <p class="text-xs text-slate-600 mt-1">Reparación de vitrina y máquina tras el sismo. Entrega bono de 4 bolsas de café a cambio del aporte.</p>
+                <div class="mt-3">
+                  <div class="flex justify-between text-xs font-semibold mb-1">
+                    <span id="cf1Raised">$2.450.000</span>
+                    <span>Meta: $3.500.000</span>
+                  </div>
+                  <div class="w-full bg-slate-200 h-2 rounded-full">
+                    <div id="cf1Bar" class="bg-teal-600 h-2 rounded-full" style="width: 70%"></div>
+                  </div>
+                </div>
+              </div>
+              <button onclick="donateCF(1, 100000)" class="mt-4 w-full bg-[#0F2240] hover:bg-slate-800 text-white text-xs font-bold py-2 rounded-lg transition">
+                Simular Aporte $100.000 (Bono)
+              </button>
+            </div>
+
+            <div class="border border-slate-200 rounded-xl p-4 flex flex-col justify-between bg-slate-50/50">
+              <div>
+                <span class="text-[11px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded">Apoyo de Recuperación</span>
+                <h3 class="font-bold text-slate-900 mt-2">Panadería Artesanal Local</h3>
+                <p class="text-xs text-slate-600 mt-1">Reposición de horno y harina. Recompensa: tarjeta prepago de desayunos para redimir en 30 días.</p>
+                <div class="mt-3">
+                  <div class="flex justify-between text-xs font-semibold mb-1">
+                    <span id="cf2Raised">$3.100.000</span>
+                    <span>Meta: $4.000.000</span>
+                  </div>
+                  <div class="w-full bg-slate-200 h-2 rounded-full">
+                    <div id="cf2Bar" class="bg-teal-600 h-2 rounded-full" style="width: 77.5%"></div>
+                  </div>
+                </div>
+              </div>
+              <button onclick="donateCF(2, 100000)" class="mt-4 w-full bg-[#0F2240] hover:bg-slate-800 text-white text-xs font-bold py-2 rounded-lg transition">
+                Simular Aporte $100.000 (Bono)
+              </button>
+            </div>
+
+            <div class="border border-slate-200 rounded-xl p-4 flex flex-col justify-between bg-slate-50/50">
+              <div>
+                <span class="text-[11px] font-bold bg-teal-100 text-teal-800 px-2 py-0.5 rounded">Comercio de Barrio</span>
+                <h3 class="font-bold text-slate-900 mt-2">Óptica Ojazos y Ojitos</h3>
+                <p class="text-xs text-slate-600 mt-1">Bono preventivo: consulta visual + filtro azul con beneficio especial para familias y estudiantes.</p>
+                <div class="mt-3">
+                  <div class="flex justify-between text-xs font-semibold mb-1">
+                    <span id="cf3Raised">$1.800.000</span>
+                    <span>Meta: $2.500.000</span>
+                  </div>
+                  <div class="w-full bg-slate-200 h-2 rounded-full">
+                    <div id="cf3Bar" class="bg-teal-600 h-2 rounded-full" style="width: 72%"></div>
+                  </div>
+                </div>
+              </div>
+              <button onclick="donateCF(3, 100000)" class="mt-4 w-full bg-[#0F2240] hover:bg-slate-800 text-white text-xs font-bold py-2 rounded-lg transition">
+                Simular Aporte $100.000 (Bono)
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 6: CÓDIGO QR, P2P & CERTIFICADO ==================== -->
+      <section id="tab-p2p" class="hidden space-y-6">
+        <div class="bg-white p-6 rounded-2xl border-2 border-teal-500 shadow-sm">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            <div class="lg:col-span-5 flex flex-col items-center justify-center p-5 rounded-2xl bg-slate-50 border border-slate-200 text-center">
+              <span class="text-[11px] font-extrabold uppercase tracking-wider text-teal-800 bg-teal-100 px-3 py-1 rounded-full mb-3">
+                Escanea con la Cámara de tu Celular
+              </span>
+              <div id="mainQRCode" class="p-3 bg-white rounded-xl border-2 border-[#0F2240] shadow-xs"></div>
+              <p id="qrCaptionBiz" class="font-bold text-slate-900 text-sm mt-3">Óptica Ojazos y Ojitos — Negocio Local</p>
+              <p id="qrCaptionAlias" class="text-xs text-slate-500 mt-0.5">Llave / Alias: @FINCON • Valor sugerido: $50.000</p>
+            </div>
+
+            <div class="lg:col-span-7 space-y-4">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900">Código QR de Cobro y Trazabilidad Digital</h2>
+                <p class="text-xs text-slate-600 mt-1">
+                  Personaliza tu llave o valor de cobro: el código QR se actualiza al instante para que tus clientes o aliados lo escaneen en el mostrador o en pantalla. Cada cobro por QR suma a tu historial digital.
+                </p>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Tu Llave / Celular / Alias QR</label>
+                  <input id="qrMerchantAlias" type="text" value="@FINCON" oninput="regenerateQRs()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Valor del Cobro QR ($ COP, opcional)</label>
+                  <input id="qrChargeAmount" type="number" value="50000" oninput="regenerateQRs()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+                </div>
+              </div>
+
+              <div class="flex flex-wrap gap-2.5 no-print">
+                <button onclick="simulateScanQRPayment()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-xs transition">
+                  ✅ Simular que un Cliente Escaneó y Pagó este QR
+                </button>
+                <button onclick="downloadQRImage()" class="bg-[#0F2240] hover:bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-xs transition">
+                  ⬇️ Descargar Imagen QR (PNG)
+                </button>
+              </div>
+              <div id="qrScanFeedback" class="hidden p-3 rounded-xl bg-emerald-50 border border-emerald-300 text-xs text-emerald-900 font-medium"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 no-print">
+            <h2 class="text-lg font-bold text-slate-900">Enviar Pago a Proveedor o Aliado (P2P Seguro)</h2>
+            <p class="text-xs text-slate-500">Haz pagos rápidos con confirmación del destinatario y registro exacto en tu libro de cuentas.</p>
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Número de Celular o Alias QR Destino</label>
+                <input id="p2pAlias" type="text" value="3104567890" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Valor ($ COP)</label>
+                <input id="p2pAmount" type="number" value="120000" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <button onclick="executeP2P()" class="w-full bg-[#0F2240] hover:bg-slate-800 text-white font-bold py-2.5 rounded-lg text-sm">
+                Confirmar y Enviar Pago P2P
+              </button>
+              <div id="p2pReceipt" class="hidden p-3 rounded-xl bg-emerald-50 border border-emerald-300 text-xs text-emerald-900 space-y-1"></div>
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-2xl border-2 border-[#0F2240] shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div>
+                <p class="text-[11px] font-bold uppercase text-teal-700">Resumen Listo para Presentar</p>
+                <h3 class="text-base font-extrabold text-[#0F2240]">SOPORTE DE VIABILIDAD FINCON IA</h3>
+              </div>
+              <button onclick="window.print()" class="no-print text-xs bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold px-3 py-1.5 rounded-lg">
+                🖨️ Imprimir / Guardar PDF
+              </button>
+            </div>
+            <div class="text-xs space-y-2 text-slate-700">
+              <p><strong>Negocio:</strong> <span id="certBizName">Óptica Ojazos y Ojitos — Negocio Local</span></p>
+              <p><strong>Situación Detectada:</strong> Negocio activo con necesidad de capital de trabajo y registro ordenado.</p>
+              <p><strong>Caja Proyectada a 90 días:</strong> $4.920.000 COP | <strong>Cuota Máxima Cómoda:</strong> $546.000 / mes</p>
+              <p><strong>Puntaje y Respaldo:</strong> 88,0% (APROBADO) — Respaldado por ventas por QR, inventario y cumplimiento.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- MODAL QR -->
+  <div id="qrModal" class="hidden fixed inset-0 z-50 bg-slate-900/70 flex items-center justify-center p-4 no-print">
+    <div class="bg-white max-w-md w-full rounded-2xl p-6 shadow-2xl text-center space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <span class="text-xs font-extrabold uppercase tracking-wider text-teal-700">Cobro Digital Instantáneo</span>
+        <button onclick="closeQRModal()" class="text-slate-400 hover:text-slate-700 font-bold text-lg">✕</button>
+      </div>
+      <div>
+        <h3 id="modalBizTitle" class="text-lg font-extrabold text-slate-900">Óptica Ojazos y Ojitos — Negocio Local</h3>
+        <p class="text-xs text-slate-500 mt-1">Apunta la cámara de tu celular al código QR para verificar los datos de pago FinCon IA</p>
+      </div>
+      <div class="flex justify-center">
+        <div id="modalQRCode" class="p-4 bg-white rounded-2xl border-2 border-[#0F2240] shadow-sm"></div>
+      </div>
+      <p id="modalQRDetails" class="text-xs font-semibold text-slate-700 bg-slate-100 py-2 px-3 rounded-lg">
+        Llave: @FINCON • Valor: $50.000 COP
+      </p>
+      <div class="flex gap-2 justify-center">
+        <button onclick="simulateScanQRPayment(); closeQRModal(); switchTab('p2p');" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg">
+          ✅ Simular Pago Escaneado
+        </button>
+        <button onclick="closeQRModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold px-4 py-2.5 rounded-lg">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL GUÍA -->
+  <div id="guideModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-4 no-print">
+    <div class="bg-white max-w-xl w-full rounded-2xl p-6 shadow-xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <h3 class="text-base font-extrabold text-[#0F2240]">Guía Práctica: ¿Cómo se Usa FinCon IA?</h3>
+        <button onclick="closeGuideModal()" class="text-slate-400 hover:text-slate-700 font-bold text-lg">✕</button>
+      </div>
+      <ol class="list-decimal list-inside space-y-2 text-xs md:text-sm text-slate-700">
+        <li><strong>Revisa tu Caja Libre (Pestaña 1):</strong> Mira cuánto dinero te queda libre después de apartar arriendo, empleados e impuestos.</li>
+        <li><strong>Anota rápido y consulta al Asistente (Pestaña 2):</strong> Registra ventas o gastos en 3 clics, usa el botón de foto (OCR) o pregúntale al chat si te alcanza para una compra.</li>
+        <li><strong>Evalúa tu situación y apoyos (Pestaña 3):</strong> Escribe tus ventas antes y después del sismo y tus daños para ver qué ruta te conviene más.</li>
+        <li><strong>Calcula tu puntaje y cuotas (Pestaña 4):</strong> Selecciona cómo vas con tus pagos y respaldos, y revisa cuánto pagarías cada mes.</li>
+        <li><strong>Cobra con Código QR y descarga tu soporte (Pestañas 5 y 6):</strong> Muestra tu código QR en pantalla para que te escaneen, simula el ingreso automático a tu caja e imprime tu soporte.</li>
+      </ol>
+      <div class="flex justify-end">
+        <button onclick="closeGuideModal()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold px-4 py-2 rounded-lg">
+          Entendido, empezar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let cajaTotal = 2850000;
+    const reservas = 1700000;
+    const cfData = {
+      1: { raised: 2450000, goal: 3500000 },
+      2: { raised: 3100000, goal: 4000000 },
+      3: { raised: 1800000, goal: 2500000 }
+    };
+
+    const formatCOP = (num) => '$' + Math.round(num).toLocaleString('es-CO');
+
+    function openGuideModal() { document.getElementById('guideModal').classList.remove('hidden'); }
+    function closeGuideModal() { document.getElementById('guideModal').classList.add('hidden'); }
+    function toggleGuideCard() { document.getElementById('userGuideCard').classList.toggle('hidden'); }
+    function openQRModal() { regenerateQRs(); document.getElementById('qrModal').classList.remove('hidden'); }
+    function closeQRModal() { document.getElementById('qrModal').classList.add('hidden'); }
+
+    function regenerateQRs() {
+      const biz = document.getElementById('businessNameInput').value || 'Comercio FinCon IA';
+      const alias = document.getElementById('qrMerchantAlias').value || '@FINCON';
+      const amount = parseFloat(document.getElementById('qrChargeAmount').value) || 0;
+      const payload = `FINCON-IA|COMERCIO:${biz}|LLAVE:${alias}|VALOR:${amount > 0 ? amount + ' COP' : 'LIBRE'}`;
+
+      document.getElementById('qrCaptionBiz').textContent = biz;
+      document.getElementById('qrCaptionAlias').textContent = `Llave / Alias: ${alias} • Valor: ${amount > 0 ? formatCOP(amount) : 'Monto libre'}`;
+      document.getElementById('modalBizTitle').textContent = biz;
+      document.getElementById('modalQRDetails').textContent = `Llave: ${alias} • Valor: ${amount > 0 ? formatCOP(amount) + ' COP' : 'Monto libre'}`;
+
+      function renderBox(container, size) {
+        container.innerHTML = '';
+        if (typeof QRCode !== 'undefined') {
+          try {
+            new QRCode(container, { text: payload, width: size, height: size, colorDark: "#0F2240", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+            return;
+          } catch (e) {}
+        }
+        const cells = 21;
+        const cellSize = Math.floor(size / cells);
+        let rects = '';
+        let seed = 0;
+        for (let i = 0; i < payload.length; i++) seed = (seed * 31 + payload.charCodeAt(i)) % 100000;
+        const isFinder = (r, c) => (r < 7 && c < 7) || (r < 7 && c >= cells - 7) || (r >= cells - 7 && c < 7);
+        for (let r = 0; r < cells; r++) {
+          for (let c = 0; c < cells; c++) {
+            let dark = false;
+            if (isFinder(r, c)) {
+              const rr = r >= cells - 7 ? r - (cells - 7) : r;
+              const cc = c >= cells - 7 ? c - (cells - 7) : c;
+              dark = (rr === 0 || rr === 6 || cc === 0 || cc === 6 || (rr >= 2 && rr <= 4 && cc >= 2 && cc <= 4));
+            } else {
+              seed = (seed * 1664525 + 1013904223) % 4294967296;
+              dark = (seed % 2 === 0);
+            }
+            if (dark) rects += `<rect x="${c * cellSize}" y="${r * cellSize}" width="${cellSize}" height="${cellSize}" fill="#0F2240"/>`;
+          }
+        }
+        container.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg"><rect width="${size}" height="${size}" fill="#ffffff"/>${rects}</svg>`;
+      }
+
+      renderBox(document.getElementById('mainQRCode'), 180);
+      renderBox(document.getElementById('modalQRCode'), 220);
+      renderBox(document.getElementById('miniDashboardQR'), 76);
+    }
+
+    function simulateScanQRPayment() {
+      const amount = parseFloat(document.getElementById('qrChargeAmount').value) || 50000;
+      const alias = document.getElementById('qrMerchantAlias').value || '@FINCON';
+      cajaTotal += amount;
+      updateSemaforo();
+      const tbody = document.getElementById('txTableBody');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td class="px-3 py-2.5 font-medium">Cobro recibido por Código QR (${alias})</td><td class="px-3 py-2.5"><span class="text-xs bg-teal-50 text-teal-700 px-2 py-0.5 rounded">QR Escaneado</span></td><td class="px-3 py-2.5 text-right font-bold text-emerald-600">+${formatCOP(amount)}</td>`;
+      tbody.prepend(tr);
+      const fb = document.getElementById('qrScanFeedback');
+      fb.classList.remove('hidden');
+      fb.textContent = `✅ ¡Pago por QR recibido! Se sumaron ${formatCOP(amount)} a tu Caja Libre (${formatCOP(cajaTotal - reservas)} disponibles).`;
+    }
+
+    function downloadQRImage() {
+      const canvas = document.querySelector('#mainQRCode canvas');
+      if (canvas) {
+        const link = document.createElement('a');
+        link.download = 'Codigo_QR_FinCon_IA.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        return;
+      }
+      const svg = document.querySelector('#mainQRCode svg');
+      if (svg) {
+        const blob = new Blob([svg.outerHTML], { type: 'image/svg+xml;charset=utf-8' });
+        const link = document.createElement('a');
+        link.download = 'Codigo_QR_FinCon_IA.svg';
+        link.href = URL.createObjectURL(blob);
+        link.click();
+      }
+    }
+
+    document.getElementById('businessNameInput').addEventListener('input', (e) => {
+      document.getElementById('certBizName').textContent = e.target.value;
+      regenerateQRs();
+    });
+
+    function switchTab(tabName) {
+      ['designthinking', 'dashboard', 'quickentry', 'ml', 'scoring', 'crowdfunding', 'p2p'].forEach(t => {
+        document.getElementById('tab-' + t).classList.add('hidden');
+        const btn = document.getElementById('btn-' + t);
+        btn.classList.remove('tab-active');
+        btn.classList.add('tab-inactive');
+      });
+      document.getElementById('tab-' + tabName).classList.remove('hidden');
+      const activeBtn = document.getElementById('btn-' + tabName);
+      activeBtn.classList.remove('tab-inactive');
+      activeBtn.classList.add('tab-active');
+      if (tabName === 'p2p') regenerateQRs();
+    }
+
+    function updateSemaforo() {
+      const libre = cajaTotal - reservas;
+      document.getElementById('kpiCajaTotal').textContent = formatCOP(cajaTotal);
+      document.getElementById('kpiCajaLibre').textContent = formatCOP(libre);
+      const card = document.getElementById('semaforoCard');
+      const dot = document.getElementById('semaforoDot');
+      const badge = document.getElementById('semaforoBadge');
+      const box = document.getElementById('boxCajaLibre');
+      const kpi = document.getElementById('kpiCajaLibre');
+      if (libre >= 800000) {
+        card.className = 'rounded-2xl p-6 border-2 border-emerald-500 bg-white shadow-sm';
+        dot.className = 'w-5 h-5 rounded-full bg-emerald-500 inline-block animate-pulse';
+        badge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800';
+        badge.textContent = 'VERDE: PUEDES OPERAR CON TRANQUILIDAD';
+        box.className = 'p-4 rounded-xl bg-emerald-50 border border-emerald-300';
+        kpi.className = 'text-2xl font-extrabold text-emerald-700 mt-1';
+      } else if (libre > 0) {
+        card.className = 'rounded-2xl p-6 border-2 border-amber-500 bg-white shadow-sm';
+        dot.className = 'w-5 h-5 rounded-full bg-amber-500 inline-block animate-pulse';
+        badge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800';
+        badge.textContent = 'AMARILLO: CUIDA TU CAJA LIBRE';
+        box.className = 'p-4 rounded-xl bg-amber-50 border border-amber-300';
+        kpi.className = 'text-2xl font-extrabold text-amber-700 mt-1';
+      } else {
+        card.className = 'rounded-2xl p-6 border-2 border-rose-500 bg-white shadow-sm';
+        dot.className = 'w-5 h-5 rounded-full bg-rose-500 inline-block animate-pulse';
+        badge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800';
+        badge.textContent = 'ROJO: ESTÁS TOCANDO RESERVAS FIJAS';
+        box.className = 'p-4 rounded-xl bg-rose-50 border border-rose-300';
+        kpi.className = 'text-2xl font-extrabold text-rose-700 mt-1';
+      }
+    }
+
+    function simulateOCR() {
+      document.getElementById('txType').value = 'gasto_op';
+      document.getElementById('txAmount').value = 210000;
+      document.getElementById('txConcept').value = 'Recibo #409 — Lentes y monturas proveedor local (leído por foto)';
+      document.getElementById('txMethod').value = 'QR / Billetera';
+    }
+
+    function addTransaction() {
+      const type = document.getElementById('txType').value;
+      const amount = parseFloat(document.getElementById('txAmount').value);
+      const concept = document.getElementById('txConcept').value || 'Movimiento anotado';
+      const method = document.getElementById('txMethod').value;
+      const alertBox = document.getElementById('txAlert');
+      if (!amount || amount <= 0) {
+        alertBox.className = 'p-3 rounded-lg text-xs font-medium bg-rose-50 text-rose-800 border border-rose-200';
+        alertBox.textContent = 'Escribe un valor mayor a cero para poder anotarlo.';
+        alertBox.classList.remove('hidden');
+        return;
+      }
+      if (type === 'ingreso') {
+        cajaTotal += amount;
+        alertBox.className = 'p-3 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200';
+        alertBox.textContent = `✅ Anotamos una entrada de ${formatCOP(amount)}. Ahora tu Dinero Libre Real es ${formatCOP(cajaTotal - reservas)}.`;
+      } else {
+        cajaTotal -= amount;
+        alertBox.className = 'p-3 rounded-lg text-xs font-medium bg-blue-50 text-blue-800 border border-blue-200';
+        alertBox.textContent = `✅ Anotamos una salida de ${formatCOP(amount)}. Dinero Libre actual: ${formatCOP(cajaTotal - reservas)}.`;
+      }
+      alertBox.classList.remove('hidden');
+      const tbody = document.getElementById('txTableBody');
+      const tr = document.createElement('tr');
+      const isPos = type === 'ingreso';
+      tr.innerHTML = `<td class="px-3 py-2.5 font-medium">${concept}</td><td class="px-3 py-2.5"><span class="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded">${method}</span></td><td class="px-3 py-2.5 text-right font-bold ${isPos ? 'text-emerald-600' : 'text-rose-600'}">${isPos ? '+' : '-'}${formatCOP(amount)}</td>`;
+      tbody.prepend(tr);
+      updateSemaforo();
+    }
+
+    function askCopilot(question) { document.getElementById('chatInput').value = question; sendChat(); }
+
+    function sendChat() {
+      const input = document.getElementById('chatInput');
+      const q = input.value.trim();
+      if (!q) return;
+      const box = document.getElementById('chatBox');
+      const libre = cajaTotal - reservas;
+      box.innerHTML += `<div class="bg-teal-600 text-white p-3 rounded-lg ml-8 text-xs">${q}</div>`;
+      let reply = `Hoy tienes <strong>${formatCOP(libre)}</strong> libres después de apartar $1.700.000 para arriendo, empleados e impuestos.`;
+      if (q.toLowerCase().includes('mercancía') || q.toLowerCase().includes('comprar') || q.toLowerCase().includes('800')) {
+        reply = libre >= 800000
+          ? `📊 <strong>Respuesta clara:</strong> Hoy tienes ${formatCOP(libre)} libres. Si gastas $800.000 en mercancía, te quedan ${formatCOP(libre - 800000)} libres sin tocar arriendo ni empleados.`
+          : `⚠️ <strong>Ten cuidado:</strong> Solo tienes ${formatCOP(libre)} libres hoy. Mejor abona la mitad ($400.000) y acuerda el resto para la próxima semana.`;
+      }
+      box.innerHTML += `<div class="bg-white p-3 rounded-lg border border-slate-200 mr-8 text-xs"><p class="font-bold text-teal-700 mb-1">FinCon IA:</p><p>${reply}</p></div>`;
+      input.value = '';
+      box.scrollTop = box.scrollHeight;
+    }
+
+    let mlChartInstance = null;
+    function runMLPipeline() {
+      const before = parseFloat(document.getElementById('mlSalesBefore').value) || 1;
+      const after = parseFloat(document.getElementById('mlSalesAfter').value) || 0;
+      const damage = parseFloat(document.getElementById('mlDamage').value) || 0;
+      const digital = parseFloat(document.getElementById('mlDigitalShare').value) || 0;
+      const freq = parseFloat(document.getElementById('mlFreq').value) || 0;
+      const gota = document.getElementById('mlGota').value;
+      const dropPct = Math.max(0, ((before - after) / before) * 100);
+      const damageIdx = Math.min(100, (damage / 10000000) * 100);
+      document.getElementById('clusterMetrics').textContent = `Caída de ventas: ${dropPct.toFixed(1)}% | Daño relativo: ${damageIdx.toFixed(1)}% | Cobros digitales: ${digital}%`;
+      const y1_30 = after * 26 * 0.22;
+      const y1_60 = y1_30 * 1.12;
+      const y1_90 = y1_30 * 1.25;
+      const total90 = y1_30 + y1_60 + y1_90;
+      const y2 = (total90 / 3) * 0.35;
+      const y3 = Math.min(98, Math.round(45 + digital * 0.35 + freq * 3.5 - (gota === 'si' ? 15 : 0)));
+      document.getElementById('supY1').textContent = formatCOP(total90);
+      document.getElementById('supY2').textContent = formatCOP(y2) + '/mes';
+      document.getElementById('supY3').textContent = y3 + '%';
+      const ctx = document.getElementById('mlForecastChart').getContext('2d');
+      if (mlChartInstance) mlChartInstance.destroy();
+      mlChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: { labels: ['Mes 1 (30d)', 'Mes 2 (60d)', 'Mes 3 (90d)'], datasets: [{ label: 'Dinero Libre Proyectado', data: [Math.round(y1_30), Math.round(y1_60), Math.round(y1_90)], borderColor: '#0D9488', backgroundColor: 'rgba(13, 148, 136, 0.15)', fill: true, tension: 0.3 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      });
+    }
+
+    function setScoringPreset(type) {
+      if (type === 'approved') {
+        document.getElementById('sc1').value = 4; document.getElementById('sc2').value = 4; document.getElementById('sc3').value = 5; document.getElementById('sc4').value = 5; document.getElementById('sc5').value = 5;
+      } else {
+        document.getElementById('sc1').value = 3; document.getElementById('sc2').value = 2; document.getElementById('sc3').value = 2; document.getElementById('sc4').value = 1; document.getElementById('sc5').value = 1;
+      }
+      calcScoring();
+    }
+
+    function calcScoring() {
+      const weights = [0.35, 0.25, 0.20, 0.10, 0.10];
+      let total = 0;
+      for (let i = 1; i <= 5; i++) {
+        const val = parseFloat(document.getElementById('sc' + i).value);
+        const aporte = (val / 5) * weights[i - 1] * 100;
+        total += aporte;
+        document.getElementById('sc' + i + 'Out').textContent = aporte.toFixed(1).replace('.', ',') + '%';
+      }
+      document.getElementById('scTotal').textContent = total.toFixed(1).replace('.', ',') + '%';
+      const box = document.getElementById('dictamenBox');
+      const verdict = document.getElementById('scVerdict');
+      if (total >= 88.0) {
+        box.className = 'p-4 rounded-xl bg-emerald-50 border border-emerald-300 flex items-center justify-between';
+        verdict.className = 'px-4 py-2 rounded-lg text-sm font-extrabold bg-emerald-600 text-white inline-block';
+        verdict.textContent = 'APROBADO';
+      } else {
+        box.className = 'p-4 rounded-xl bg-rose-50 border border-rose-300 flex items-center justify-between';
+        verdict.className = 'px-4 py-2 rounded-lg text-sm font-extrabold bg-rose-600 text-white inline-block';
+        verdict.textContent = 'NO APROBADO';
+      }
+    }
+
+    function calcAmortization() {
+      const P = parseFloat(document.getElementById('amAmount').value) || 5000000;
+      const n = parseInt(document.getElementById('amMonths').value) || 12;
+      const ea = (parseFloat(document.getElementById('amRate').value) || 12) / 100;
+      const method = document.getElementById('amMethod').value;
+      const im = Math.pow(1 + ea, 1 / 12) - 1;
+      let saldo = P, totCuota = 0, totInt = 0, totCap = 0;
+      const tbody = document.getElementById('amTableBody');
+      tbody.innerHTML = '';
+      const cuotaFrances = P * (im * Math.pow(1 + im, n)) / (Math.pow(1 + im, n) - 1);
+      const capAleman = P / n;
+      let firstQuota = 0;
+      for (let t = 1; t <= n; t++) {
+        let interes = saldo * im, capital = 0, cuota = 0;
+        if (method === 'frances') { cuota = cuotaFrances; capital = cuota - interes; }
+        else if (method === 'aleman') { capital = capAleman; cuota = capital + interes; }
+        else { capital = (t === n) ? P : 0; cuota = capital + interes; }
+        if (t === 1) firstQuota = cuota;
+        saldo = Math.max(0, saldo - capital);
+        totCuota += cuota; totInt += interes; totCap += capital;
+        tbody.innerHTML += `<tr><td class="px-3 py-2 text-left font-medium">Mes ${t}</td><td class="px-3 py-2 font-semibold">${formatCOP(cuota)}</td><td class="px-3 py-2 text-slate-600">${formatCOP(interes)}</td><td class="px-3 py-2 text-teal-700">${formatCOP(capital)}</td><td class="px-3 py-2 text-slate-500">${formatCOP(saldo)}</td></tr>`;
+      }
+      tbody.innerHTML += `<tr class="bg-slate-100 font-extrabold text-slate-900"><td class="px-3 py-2 text-left">TOTAL</td><td class="px-3 py-2">${formatCOP(totCuota)}</td><td class="px-3 py-2">${formatCOP(totInt)}</td><td class="px-3 py-2">${formatCOP(totCap)}</td><td class="px-3 py-2">$0</td></tr>`;
+      document.getElementById('amSummary').innerHTML = `
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><p class="text-xs text-slate-500">Cuota del Mes 1</p><p class="text-lg font-extrabold text-slate-900">${formatCOP(firstQuota)}</p></div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><p class="text-xs text-slate-500">Total Intereses (${n} meses)</p><p class="text-lg font-extrabold text-amber-700">${formatCOP(totInt)}</p></div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200"><p class="text-xs text-slate-500">Total a Pagar al Final</p><p class="text-lg font-extrabold text-teal-700">${formatCOP(totCuota)}</p></div>
+      `;
+    }
+
+    function donateCF(id, amount) {
+      cfData[id].raised = Math.min(cfData[id].goal, cfData[id].raised + amount);
+      const pct = (cfData[id].raised / cfData[id].goal) * 100;
+      document.getElementById(`cf${id}Raised`).textContent = formatCOP(cfData[id].raised);
+      document.getElementById(`cf${id}Bar`).style.width = pct + '%';
+    }
+
+    function executeP2P() {
+      const alias = document.getElementById('p2pAlias').value;
+      const amt = parseFloat(document.getElementById('p2pAmount').value) || 0;
+      if (amt <= 0 || amt > cajaTotal) return;
+      cajaTotal -= amt;
+      updateSemaforo();
+      const box = document.getElementById('p2pReceipt');
+      box.classList.remove('hidden');
+      box.innerHTML = `<p class="font-bold">✅ Pago P2P Confirmado y Anotado</p><p><strong>Destino Verificado:</strong> C***s R***z (Celular/QR: ${alias})</p><p><strong>Valor Enviado:</strong> ${formatCOP(amt)} COP | <strong>Estado:</strong> COMPLETADO</p>`;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      new Chart(document.getElementById('expensesChart').getContext('2d'), {
+        type: 'doughnut',
+        data: { labels: ['Mercancía y Proveedores (42%)', 'Arriendo y Servicios (35%)', 'Empleados y Varios (23%)'], datasets: [{ data: [42, 35, 23], backgroundColor: ['#0F2240', '#0D9488', '#F59E0B'] }] },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+      regenerateQRs();
+      runMLPipeline();
+      calcScoring();
+      calcAmortization();
+    });
+  </script>
+</body>
+</html>
